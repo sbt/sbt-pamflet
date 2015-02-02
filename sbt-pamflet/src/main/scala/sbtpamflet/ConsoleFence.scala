@@ -10,10 +10,11 @@ import sbt.{ IO, Logger, ClasspathOptions => SbtClasspathOptions }
 import xsbti.compile.{ ScalaInstance, ClasspathOptions }
 import xsbtpamfleti.ConsoleResponse
 import xsbtpamfleti.ConsoleResult.{ Success, Incomplete, Error }
-import sbtpamflet.compiler.{ ConsoleSession, ConsoleRequest }
+import sbtpamflet.compiler.{ CompilerBridgeInstance, ConsoleSession, ConsoleRequest }
  
 trait ConsoleFence extends FencePlugin { self =>
   override def toString: String = "ConsoleFence"
+  def compilerBridge: CompilerBridgeInstance
   def customClasspath: List[File] = Nil
   def scalaInstance: ScalaInstance
   def classpathOptions: ClasspathOptions = SbtClasspathOptions.auto
@@ -32,10 +33,9 @@ trait ConsoleFence extends FencePlugin { self =>
   def eval(content: String, tag: String, position: Position): Block =
     {
       val requests = ConsoleRequest.parse(content)
-      val session = ConsoleSession(tag, customClasspath, scalaInstance, classpathOptions,
+      val session = ConsoleSession(tag, compilerBridge, customClasspath, scalaInstance, classpathOptions,
         scalacOptions, log)
       val responses = requests map { session.interpret }
-      println(responses)
       val items = (requests zip responses) map {
         case (req, res) =>
           res.result match {

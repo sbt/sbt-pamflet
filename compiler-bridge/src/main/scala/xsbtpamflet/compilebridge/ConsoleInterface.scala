@@ -1,7 +1,6 @@
 package xsbtpamflet
 
-import xsbti.Logger
-import xsbtpamfleti.ConsoleResult
+import xsbtpamfleti.{ Logger, ConsoleResult }
 import xsbtpamfleti.ConsoleResult._
 import scala.tools.nsc.{ GenericRunnerCommand, Interpreter, ObjectRunner, Settings }
 import scala.tools.nsc.interpreter.{ IMain, InteractiveReader }

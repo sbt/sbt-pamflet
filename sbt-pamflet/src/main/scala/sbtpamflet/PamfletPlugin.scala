@@ -11,6 +11,7 @@ object PamfletPlugin extends AutoPlugin {
 
   val autoImport = new PamfletKeys {
     val Pamflet = config("pamflet") extend Compile
+    val PamfletTool = config("pamflet-tool")
     val PfOnError = sbtpamflet.PfOnError
   }
   import autoImport._
@@ -18,7 +19,7 @@ object PamfletPlugin extends AutoPlugin {
 
   lazy val pamfletSettings = pamfletConfigurationSettings ++ inConfig(Pamflet)(basePamfletSettings)
   lazy val pamfletConfigurationSettings = Seq(
-    ivyConfigurations += Pamflet,
+    ivyConfigurations ++= Seq(Pamflet, PamfletTool),
     pf := (pf in Pamflet).value
   ) ++ inConfig(Pamflet)(Defaults.configSettings)
 

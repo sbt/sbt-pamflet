@@ -1,6 +1,6 @@
 package xsbtpamflet
 
-import xsbti.Logger
+import xsbtpamfleti.Logger
 
 class ConsoleFactory extends xsbtpamfleti.ConsoleFactory {
   def createConsole(args: Array[String], bootClasspathString: String,

@@ -4,22 +4,21 @@ package compiler
 import java.io.File
 import scala.collection.concurrent.TrieMap
 import xsbti.compile.{ ScalaInstance, ClasspathOptions }
-import sbt.Logger
+import sbt.{ Logger => SbtLogger, Level }
 import sbt.compiler.CompilerArguments
-import xsbtpamflet.ConsoleInterface
-import xsbtpamfleti.ConsoleResponse
+import xsbtpamfleti.{ ConsoleInterface, ConsoleResponse, Logger, F0 }
 
 case class ConsoleSession(
     name: String,
+    scalaInstance: ScalaInstance,
+    compilerBridge: CompilerBridgeInstance,
     scalacOptions: Seq[String],
     bootClasspathString: String,
     classpathString: String,
     log: Logger) {
-  lazy val console: ConsoleInterface = new ConsoleInterface(
-    scalacOptions.toArray, bootClasspathString, classpathString,
-    "", "", // initialCommands, cleanupCommands
-    None.orNull, Array(), Array(), log
-  )
+  lazy val console: ConsoleInterface = (new Console(scalaInstance, compilerBridge)).
+    console(scalacOptions, bootClasspathString, classpathString,
+      "", "", Array(), Array(), log)
   def interpret(request: ConsoleRequest): ConsoleResponse =
     interpret(request.input.mkString("\n"))
   def interpret(line: String): ConsoleResponse =
@@ -34,8 +33,8 @@ case class ConsoleSession(
 object ConsoleSession {
   val sessions: TrieMap[String, ConsoleSession] = TrieMap()
 
-  def apply(tag: String, customClasspath: List[File], scalaInstance: ScalaInstance,
-    classpathOptions: ClasspathOptions, scalacOptions: Seq[String], log: Logger): ConsoleSession =
+  def apply(tag: String, compilerBridge: CompilerBridgeInstance, customClasspath: List[File], scalaInstance: ScalaInstance,
+    classpathOptions: ClasspathOptions, scalacOptions: Seq[String], log: SbtLogger): ConsoleSession =
     {
       // From AnalyzingCompiler
       def consoleClasspaths(classpath: Seq[File]): (String, String) =
@@ -52,7 +51,15 @@ object ConsoleSession {
         sessions.remove(name)
       }
       sessions.getOrElseUpdate(name,
-        ConsoleSession(name, scalacOptions, bootClasspath, classpathString, log)
+        ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
       )
+    }
+  implicit def toXpamfletiLogger(log: SbtLogger): Logger =
+    new Logger {
+      def debug(msg: F0[String]): Unit = log.log(Level.Debug, msg.apply)
+      def warn(msg: F0[String]): Unit = log.log(Level.Warn, msg.apply)
+      def info(msg: F0[String]): Unit = log.log(Level.Info, msg.apply)
+      def error(msg: F0[String]): Unit = log.log(Level.Error, msg.apply)
+      def trace(msg: F0[Throwable]) = log.trace(msg.apply)    
     }
 }
