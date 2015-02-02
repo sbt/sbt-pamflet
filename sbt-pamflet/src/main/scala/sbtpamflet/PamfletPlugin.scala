@@ -20,7 +20,8 @@ object PamfletPlugin extends AutoPlugin {
   lazy val pamfletSettings = pamfletConfigurationSettings ++ inConfig(Pamflet)(basePamfletSettings)
   lazy val pamfletConfigurationSettings = Seq(
     ivyConfigurations ++= Seq(Pamflet, PamfletTool),
-    pf := (pf in Pamflet).value
+    pf := (pf in Pamflet).value,
+    pfWrite := (pfWrite in Pamflet).value
   ) ++ inConfig(Pamflet)(Defaults.configSettings)
 
   lazy val basePamfletSettings = Seq(
