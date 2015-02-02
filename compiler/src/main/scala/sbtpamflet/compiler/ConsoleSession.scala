@@ -32,7 +32,8 @@ case class ConsoleSession(
 
 object ConsoleSession {
   val sessions: TrieMap[String, ConsoleSession] = TrieMap()
-
+  def clear(): Unit = sessions.clear()
+  
   def apply(tag: String, compilerBridge: CompilerBridgeInstance, customClasspath: List[File], scalaInstance: ScalaInstance,
     classpathOptions: ClasspathOptions, scalacOptions: Seq[String], log: SbtLogger): ConsoleSession =
     {

@@ -22,7 +22,9 @@ trait ConsoleFence extends FencePlugin { self =>
   def scalacOptions: Seq[String]
   def log: Logger
 
-  override def onBeginLanguage(): Unit = ()
+  override def onBeginLanguage(): Unit = {
+    ConsoleSession.clear()
+  }
 
   override def isDefinedAt(language: Option[String]): Boolean =
     language match {
