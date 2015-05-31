@@ -19,6 +19,8 @@ case class ConsoleSession(
   lazy val console: ConsoleInterface = (new Console(scalaInstance, compilerBridge)).
     console(scalacOptions, bootClasspathString, classpathString,
       "", "", Array(), Array(), log)
+  def reset(): Unit =
+    console.reset()
   def interpret(request: ConsoleRequest): ConsoleResponse =
     interpret(request.input.mkString("\n"))
   def interpret(line: String): ConsoleResponse =
@@ -48,12 +50,13 @@ object ConsoleSession {
       val options = ConsoleSessionOption.parse(tag)
       val (classpathString, bootClasspath) = consoleClasspaths(customClasspath)
       val name = "_"
-      if (options.fresh) {
-        sessions.remove(name)
-      }
-      sessions.getOrElseUpdate(name,
+      val s0 = sessions.getOrElseUpdate(name,
         ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
       )
+      if (options.reset) {
+        s0.reset()
+      }
+      s0
     }
   implicit def toXpamfletiLogger(log: SbtLogger): Logger =
     new Logger {

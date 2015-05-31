@@ -78,6 +78,11 @@ class ConsoleInterface(args: Array[String], bootClasspathString: String,
     // errorWriter.getBuffer.setLength(0)
     outWriter.getBuffer.setLength(0)
   }
+
+  def reset(): Unit = {
+    clearBuffer()
+    interpreter.reset()
+  }
 }
 
 object MakeSettings {
