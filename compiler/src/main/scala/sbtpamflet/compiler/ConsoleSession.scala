@@ -24,11 +24,13 @@ case class ConsoleSession(
   def interpret(request: ConsoleRequest): ConsoleResponse =
     interpret(request.input.mkString("\n"))
   def interpret(line: String): ConsoleResponse =
-    try {
-      console.interpret(line, false)
-    } catch {
-      case e: Throwable =>
-        throw e
+    synchronized {
+      try {
+        console.interpret(line, false)
+      } catch {
+        case e: Throwable =>
+          throw e
+      }
     }
 }
 
@@ -54,9 +56,23 @@ object ConsoleSession {
         ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
       )
       if (options.reset) {
-        s0.reset()
+        // use reset
+        if (false) {
+          s0.reset()
+          s0
+        } else {
+          System.gc()
+          System.runFinalization()
+          // Force actually cleaning the weak hash maps.
+          System.gc()
+          sessions.remove(name)
+          val s1 = sessions.getOrElseUpdate(name,
+            ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
+          )
+          s1
+        }
       }
-      s0
+      else s0
     }
   implicit def toXpamfletiLogger(log: SbtLogger): Logger =
     new Logger {

@@ -1,6 +1,6 @@
 package sbtpamflet
 
-import pamflet.{CachedFileStorage, Preview, Produce, FencePlugin}
+import pamflet.{CachedFileStorage, FileStorage, Preview, Produce, FencePlugin}
 
 import sbt._
 import Keys._
