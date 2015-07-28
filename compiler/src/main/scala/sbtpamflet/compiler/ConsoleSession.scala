@@ -65,6 +65,7 @@ object ConsoleSession {
           System.runFinalization()
           // Force actually cleaning the weak hash maps.
           System.gc()
+          GCUtil.forceGcWithInterval(GCUtil.defaultMinForcegcInterval)
           sessions.remove(name)
           val s1 = sessions.getOrElseUpdate(name,
             ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
