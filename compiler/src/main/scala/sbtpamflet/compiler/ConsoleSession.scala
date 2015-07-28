@@ -10,6 +10,7 @@ import xsbtpamfleti.{ ConsoleInterface, ConsoleResponse, Logger, F0 }
 
 case class ConsoleSession(
     name: String,
+    options: ConsoleSessionOptions,
     scalaInstance: ScalaInstance,
     compilerBridge: CompilerBridgeInstance,
     scalacOptions: Seq[String],
@@ -49,11 +50,11 @@ object ConsoleSession {
           val bootClasspath = if (classpathOptions.autoBoot) arguments.createBootClasspathFor(classpath) else ""
           (classpathString, bootClasspath)
         }
-      val options = ConsoleSessionOption.parse(tag)
+      val options = ConsoleSessionOptions.parse(tag)
       val (classpathString, bootClasspath) = consoleClasspaths(customClasspath)
       val name = "_"
       val s0 = sessions.getOrElseUpdate(name,
-        ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
+        ConsoleSession(name, options, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
       )
       if (options.reset) {
         // use reset
@@ -61,14 +62,10 @@ object ConsoleSession {
           s0.reset()
           s0
         } else {
-          System.gc()
-          System.runFinalization()
-          // Force actually cleaning the weak hash maps.
-          System.gc()
           GCUtil.forceGcWithInterval(GCUtil.defaultMinForcegcInterval)
           sessions.remove(name)
           val s1 = sessions.getOrElseUpdate(name,
-            ConsoleSession(name, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
+            ConsoleSession(name, options, scalaInstance, compilerBridge, scalacOptions, bootClasspath, classpathString, log)
           )
           s1
         }
@@ -81,6 +78,6 @@ object ConsoleSession {
       def warn(msg: F0[String]): Unit = log.log(Level.Warn, msg.apply)
       def info(msg: F0[String]): Unit = log.log(Level.Info, msg.apply)
       def error(msg: F0[String]): Unit = log.log(Level.Error, msg.apply)
-      def trace(msg: F0[Throwable]) = log.trace(msg.apply)    
+      def trace(msg: F0[Throwable]) = log.trace(msg.apply)
     }
 }

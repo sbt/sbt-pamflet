@@ -36,14 +36,12 @@ object PamfletConsolePlugin extends AutoPlugin {
   )
 
   lazy val basePamfletConsoleSettings = Seq(
-    pfOnError in console := PfOnError.PrintError,
     pfFencePlugins += {
       val cp = (fullClasspath in console).value.toList
       val si = (scalaInstance in console).value
       val so = (scalacOptions in console).value
       new ConsoleFence {
         def compilerBridge = pfCompilerBridge.value
-        def errorHandling = (pfOnError in console).value
         override def customClasspath = cp map { _.data }
         override def scalaInstance = si
         def scalacOptions = so

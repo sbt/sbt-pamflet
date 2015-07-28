@@ -10,7 +10,7 @@ import sbt.{ IO, Logger, ClasspathOptions => SbtClasspathOptions }
 import xsbti.compile.{ ScalaInstance, ClasspathOptions }
 import xsbtpamfleti.ConsoleResponse
 import xsbtpamfleti.ConsoleResult.{ Success, Incomplete, Error }
-import sbtpamflet.compiler.{ CompilerBridgeInstance, ConsoleSession, ConsoleRequest }
+import sbtpamflet.compiler.{ CompilerBridgeInstance, ConsoleSession, ConsoleRequest, ConsoleSessionOptions }
  
 trait ConsoleFence extends FencePlugin { self =>
   override def toString: String = "ConsoleFence"
@@ -18,7 +18,6 @@ trait ConsoleFence extends FencePlugin { self =>
   def customClasspath: List[File] = Nil
   def scalaInstance: ScalaInstance
   def classpathOptions: ClasspathOptions = SbtClasspathOptions.auto
-  def errorHandling: PfOnError
   def scalacOptions: Seq[String]
   def log: Logger
 
@@ -28,7 +27,7 @@ trait ConsoleFence extends FencePlugin { self =>
 
   override def isDefinedAt(language: Option[String]): Boolean =
     language match {
-      case Some(x) if x startsWith "console" => true
+      case Some(x) if (x.trim == "console") || (x startsWith "console:") => true
       case _ => false
     }
 
@@ -37,13 +36,15 @@ trait ConsoleFence extends FencePlugin { self =>
       val requests = ConsoleRequest.parse(content)
       val session = ConsoleSession(tag, compilerBridge, customClasspath, scalaInstance, classpathOptions,
         scalacOptions, log)
+      // this option could be different from the cached session
+      val options = ConsoleSessionOptions.parse(tag)
       val responses = requests map { session.interpret }
       val items = (requests zip responses) map {
         case (req, res) =>
           res.result match {
             case Success | Incomplete =>
               Text(req.toString) -> Text(res.output)
-            case Error if errorHandling == PfOnError.PrintError =>
+            case Error if options.allowErrors =>
               Text(req.toString) -> Text(res.output)
             case Error =>
               sys.error(s"Error in line: scala> $req\n" + res)

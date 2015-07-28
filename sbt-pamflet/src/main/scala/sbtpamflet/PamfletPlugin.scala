@@ -12,7 +12,6 @@ object PamfletPlugin extends AutoPlugin {
   val autoImport = new PamfletKeys {
     val Pamflet = config("pamflet") extend Compile
     val PamfletTool = config("pamflet-tool")
-    val PfOnError = sbtpamflet.PfOnError
   }
   import autoImport._
   override def projectSettings = pamfletSettings

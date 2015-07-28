@@ -11,10 +11,10 @@ import sbt.Path._
 import sbt.Logger.o2m
 import xsbti.compile.{ CompileOrder }
 import xsbti.{ Position => SbtPosition }
+import sbtpamflet.compiler.ConsoleSessionOptions
 
 trait CompileFence extends FencePlugin { self =>
   override def toString: String = "CompileFence"
-  def errorHandling: PfOnError
   def customClasspath: List[File] = Nil
   def scalacOptions: Seq[String]
   def javacOptions: Seq[String]
@@ -29,15 +29,15 @@ trait CompileFence extends FencePlugin { self =>
 
   override def isDefinedAt(language: Option[String]): Boolean =
     language match {
-      case Some("compile") => true
+      case Some(x) if (x.trim == "compile") || (x startsWith "compile:") => true
       case _ => false
     }
 
   override def toBlock(language: Option[String], content: String, position: Position,
       list: ListBuffer[Block]): Block =
     language match {
-      case Some("compile") =>
-        compileOnGlobal(content, position)
+      case Some(tag) if tag startsWith "compile" =>
+        compileOnGlobal(content, tag, position)
         CompileCodeBlock(Text(content), position)
       case _ => sys.error(s"Unexpected language: $language")
     }
@@ -52,7 +52,7 @@ trait CompileFence extends FencePlugin { self =>
       content match { case Text(req) => req }
     }</code></pre>
 
-  def compileOnGlobal(content: String, position: Position): Unit =
+  def compileOnGlobal(content: String, tag: String, position: Position): Unit =
     {
       IO.withTemporaryDirectory { tempDir =>
         val randomName = "pamflet_" + java.lang.Integer.toHexString(content.##) + ".scala"
@@ -63,6 +63,7 @@ trait CompileFence extends FencePlugin { self =>
         val input = Compiler.inputs(customClasspath, sources, classDirectory,
           scalacOptions, javacOptions, maxErrors, sourcePositionMappers,
           compileOrder)(compilers, compileIncSetup, log)
+        val options = ConsoleSessionOptions.parse(tag)
         val reporter = new LoggerReporter(maxErrors, log, { p: SbtPosition =>
           new SbtPosition {
             def line = p.line
@@ -78,7 +79,7 @@ trait CompileFence extends FencePlugin { self =>
         try {
           Compiler(input, log, reporter)
         } catch {
-          case e: Throwable if errorHandling == PfOnError.PrintError => () 
+          case e: Throwable if options.allowErrors => ()
         }
       }
     }

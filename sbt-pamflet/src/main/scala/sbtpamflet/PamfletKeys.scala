@@ -8,7 +8,6 @@ trait PamfletKeys {
   lazy val pf = taskKey[Unit]("Preview Pamflet")
   lazy val pfWrite = taskKey[Vector[File]]("Write Pamflet")
   lazy val pfFencePlugins = taskKey[Seq[FencePlugin]]("Pamflet fence plugins")
-  lazy val pfOnError = taskKey[PfOnError]("Error handling")
   lazy val pfCompilerBridge = taskKey[CompilerBridgeInstance]("Console instance wrapper")
 }
 object PamfletKeys extends PamfletKeys {}
