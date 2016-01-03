@@ -1,7 +1,7 @@
 lazy val scalaCompiler = Def.setting { "org.scala-lang" % "scala-compiler" % scalaVersion.value }
 lazy val pamflet = "net.databinder" %% "pamflet-library" % "0.7.0-SNAPSHOT"
-lazy val scala2104 = "2.10.4"
-lazy val scala2115 = "2.11.5"
+lazy val scala2106 = "2.10.6"
+lazy val scala2117 = "2.11.7"
 lazy val pluginDeps = Seq(pamflet)
 
 lazy val commonSettings = Seq(
@@ -17,7 +17,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root: Project = (project in file(".")).
-  aggregate(sbtPamflet, interface, precompiled2104, precompiled2115, compiler).
+  aggregate(sbtPamflet, interface, precompiled2106, precompiled2117, compiler).
   settings(commonSettings: _*).
   settings(
     publishArtifact := false
@@ -33,7 +33,7 @@ lazy val sbtPamflet: Project = (project in file("sbt-pamflet")).
     libraryDependencies ++= pluginDeps,
     sourceGenerators in Compile <+= buildInfo,
     buildInfoKeys := Seq[BuildInfoKey](organization, name, version,
-      "precompiledVersions" -> Seq(scala2104, scala2115)),
+      "precompiledVersions" -> Seq(scala2106, scala2117)),
     buildInfoPackage := "sbtpamflet"
   )
 
@@ -58,8 +58,8 @@ lazy val interface: Project = (project in file("interface")).
     exportJars := true
   )
 
-lazy val precompiled2104 = precompiledCompilerBridge(scala2104)
-lazy val precompiled2115 = precompiledCompilerBridge(scala2115)
+lazy val precompiled2106 = precompiledCompilerBridge(scala2106)
+lazy val precompiled2117 = precompiledCompilerBridge(scala2117)
 
 def precompiledCompilerBridge(scalav: String): Project = Project(id = StringUtilities.normalize("Compiler Bridge " + scalav.replace('.', '_')),
     base = file("compiler-bridge")).
