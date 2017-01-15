@@ -83,4 +83,4 @@ scala> Foo
 res0: Foo.type = Foo$@7b020812
 ```
 
-  [Pamflet]: http://pamflet.databinder.net/Pamflet.html
+  [Pamflet]: http://www.foundweekends.org/pamflet/
